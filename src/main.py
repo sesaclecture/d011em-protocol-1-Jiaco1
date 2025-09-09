@@ -24,9 +24,16 @@ def blink_led() -> None:
     - gpiozero.LED 사용
     - 종료시 LED는 OFF 상태
     """
-    # TODO: blink_led 구현
+    led = LED(18)
 
-    raise NotImplementedError
+    for _ in range (10):
+        led.on()
+        time.sleep(1)
+
+        led.off()
+    
+        
+
 
 
 def check_to_input_button() -> None:
@@ -38,9 +45,27 @@ def check_to_input_button() -> None:
     - polling 방식으로 구현할 것.
     - 버튼 입력을 10번 받았으면 종료.
     """
-    # TODO: check_to_input_button 구현
+    btn = Button(18, pull_up=True)
 
-    raise NotImplementedError
+    prev = btn.is_pressed
+    count = 0
+
+    while count < 10 :
+        cur = btn.is_pressed
+
+        if cur != prev:
+            if cur:
+                print("pressed")
+                count += 1
+
+            else:
+                print("released")
+            prev = cur
+
+        time.sleep(0.1)
+
+
+
 
 
 def blink_led_through_button() -> None:
@@ -55,8 +80,17 @@ def blink_led_through_button() -> None:
     # TODO: blink_led_through_button 구현
     led = LED(12)
     led.on()
+    button = Button(13, pull_up=True)
+    count = 0
 
-    raise NotImplementedError
+    while count < 10:
+        if button.is_pressed:
+            led.on()
+            time.sleep(0.5)
+            led.off()
+            count +=1
+        else:
+            led.off()
 
 
 def transmit_msg() -> None:
@@ -65,9 +99,14 @@ def transmit_msg() -> None:
     - 총 10번 전송 후 종료
     - 개행을 붙여 전송 (수신/테스트 편의)
     """
-    # TODO: blink_led_through_button 구현
 
-    raise NotImplementedError
+    ser = Serial("/dev/ttyAMA3", baudrate=115200, timeout=1.0)
+
+    for i in range (10):
+        msg = f"Hello World! {i}\n"
+        ser.write(msg.encode())
+
+    ser.close()
 
 
 def receive_msg() -> None:
@@ -75,10 +114,27 @@ def receive_msg() -> None:
     [문제 2] UART3에서 줄 단위로 읽어 화면에 출력.
     - 'exit' (대소문자 무시) 라인을 수신하면 함수 종료
     """
-    # TODO: blink_led_through_button 구현
 
-    raise NotImplementedError
 
+
+    ser = Serial('/dev/ttyAMA3', baudrate=115200, timeout=1.0)
+
+    buffer = ""
+    while True:
+        ch = ser.read().decode('utf-8', errors='ignore')
+        if not ch:
+            continue
+        if ch == "\n":  # 한 줄 완성
+            line = buffer.strip()
+            if line:
+                print(line)
+                if line.lower() == "exit":
+                    break
+            buffer = ""
+        else:
+            buffer += ch
+
+    ser.close()
 
 if __name__ == "__main__":
     blink_led()
